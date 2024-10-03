@@ -504,7 +504,8 @@ def syncData2Influx(nodeID,nodeName):
 
     for csvFile in csvDataFiles:
         print(csvFile)
-        sensorID, fileDate = parse_csv_filename(csvFile)    
+        sensorID, fileDate = parse_csv_filename(csvFile)
+            
         # If file date is the before the latest date ignore 
         # If file date is latest date 
             # Check the latest time updated 
