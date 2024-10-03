@@ -147,16 +147,16 @@ def syncData2Influx(nodeID,nodeName):
     # again witin a while loop you check for a new time  
 
     for csvFile in csvDataFiles:
-        # print(csvFile)
-        sensorID, fileDate = parse_csv_filename(csvFile)      
-        if sensorID is not None:
-            if fileDate != today: 
-                # print(fileDate)
-                # print("================================================")
-                # print("Syncing "+ csvFile)
-                sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate)
-            else:
-                sendCSV2InfluxToday(csvFile,nodeID,sensorID,nodeName,fileDate)
+        print(csvFile)
+        # sensorID, fileDate = parse_csv_filename(csvFile)      
+        # if sensorID is not None:
+        #     if fileDate != today: 
+        #         # print(fileDate)
+        #         # print("================================================")
+        #         # print("Syncing "+ csvFile)
+        #         sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate)
+        #     else:
+        #         sendCSV2InfluxToday(csvFile,nodeID,sensorID,nodeName,fileDate)
 
 def writeJSONInfluxLatest(dateTime,sensorID):
     directoryIn  = dataFolder+"/"+nodeID+"/"+sensorID+"_influx_sync.json"
@@ -276,95 +276,95 @@ def sendCSV2InfluxToday(csvFile,nodeID,sensorID,nodeName,fileDate):
         print(f"An error occurred: {e}")
    
 
-def sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate):
-    print()
-    print("--------------")
-    print("sendCSV2Influx")
-    print(csvFile)
+# def sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate):
+#     print()
+#     print("--------------")
+#     print("sendCSV2Influx")
+#     print(csvFile)
 
 
-    try:
-    # while True:
+#     try:
+#     # while True:
 
-        # print(csvFile)
-        if not is_connected():
-            print("No Connectivity")
-            return 
+#         # print(csvFile)
+#         if not is_connected():
+#             print("No Connectivity")
+#             return 
         
-        sequence = []
-        tag_columns = ["device_id", "device_name"]
-        time_column = "dateTime"
-        currentRecord = read_records(dataFileInflux)
-        fileDateStr = str(fileDate.strftime('%Y-%m-%d'))
+#         sequence = []
+#         tag_columns = ["device_id", "device_name"]
+#         time_column = "dateTime"
+#         currentRecord = read_records(dataFileInflux)
+#         fileDateStr = str(fileDate.strftime('%Y-%m-%d'))
 
-        if check_id_date_exists(sensorID, fileDateStr, currentRecord, dataFileInflux):
-            print("File already synced")
-            print()
-            return; 
-        # At this point I need the date from the csv file 
-        # print(currentRecord)
+#         if check_id_date_exists(sensorID, fileDateStr, currentRecord, dataFileInflux):
+#             print("File already synced")
+#             print()
+#             return; 
+#         # At this point I need the date from the csv file 
+#         # print(currentRecord)
 
-        with open(csvFile, "r") as f:
-            reader            = csv.DictReader((line.replace('\0','') for line in f) )
-            rowList           = list(reader)
-            for i, rowData in enumerate(rowList):
-                try:
-                    dateTimeRow = datetime.strptime(rowData['dateTime'], '%Y-%m-%d %H:%M:%S.%f')
+#         with open(csvFile, "r") as f:
+#             reader            = csv.DictReader((line.replace('\0','') for line in f) )
+#             rowList           = list(reader)
+#             for i, rowData in enumerate(rowList):
+#                 try:
+#                     dateTimeRow = datetime.strptime(rowData['dateTime'], '%Y-%m-%d %H:%M:%S.%f')
 
-                    if sensorID == "BME280" or sensorID == "BME680":
-                        # print(rowData)
-                        if float(rowData["humidity"]) > 0:
-                            rowData["dewPoint"] = str(243.04 * (math.log(float(rowData["humidity"]) / 100.0) + ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))) \
-                                / (17.625 - math.log(float(rowData["humidity"]) / 100.0) - ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))))
-                        else:
-                            rowData["dewPoint"] = str(0)
+#                     if sensorID == "BME280" or sensorID == "BME680":
+#                         # print(rowData)
+#                         if float(rowData["humidity"]) > 0:
+#                             rowData["dewPoint"] = str(243.04 * (math.log(float(rowData["humidity"]) / 100.0) + ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))) \
+#                                 / (17.625 - math.log(float(rowData["humidity"]) / 100.0) - ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))))
+#                         else:
+#                             rowData["dewPoint"] = str(0)
 
-                    point = Point(sensorID)
-                    point.tag("device_id", nodeID)
-                    point.tag("device_name", nodeName)
-                    point.time(dateTimeRow, WritePrecision.NS)
-                    for header in reader.fieldnames:
-                        if header not in tag_columns and header != time_column:
-                            if sensorID == "MWBR001" and header == "rtcTime":
-                                point.field(header, float(dateTimeRow.year))
-                            else:
-                                point.field(header, isFloat(rowData[header]))
-                    sequence.append(point)
-                except Exception as e:
-                    print(f"-- An error occurred --: {e}")
-                    traceback.print_exc()
+#                     point = Point(sensorID)
+#                     point.tag("device_id", nodeID)
+#                     point.tag("device_name", nodeName)
+#                     point.time(dateTimeRow, WritePrecision.NS)
+#                     for header in reader.fieldnames:
+#                         if header not in tag_columns and header != time_column:
+#                             if sensorID == "MWBR001" and header == "rtcTime":
+#                                 point.field(header, float(dateTimeRow.year))
+#                             else:
+#                                 point.field(header, isFloat(rowData[header]))
+#                     sequence.append(point)
+#                 except Exception as e:
+#                     print(f"-- An error occurred --: {e}")
+#                     traceback.print_exc()
 
                 
-                if (i + 1) % batchSize == 0 or i == len(rowList) - 1:
-                    try:
-                        print(i+1)
-                        with InfluxDBClient(url=influxURL, token=influxToken, org=influxOrg) as client:
-                            write_api = client.write_api(write_options=SYNCHRONOUS)
-                            write_api.write(influxBucket, influxOrg, sequence)
-                        sequence.clear()
-                        time.sleep(.25)
+#                 if (i + 1) % batchSize == 0 or i == len(rowList) - 1:
+#                     try:
+#                         print(i+1)
+#                         with InfluxDBClient(url=influxURL, token=influxToken, org=influxOrg) as client:
+#                             write_api = client.write_api(write_options=SYNCHRONOUS)
+#                             write_api.write(influxBucket, influxOrg, sequence)
+#                         sequence.clear()
+#                         time.sleep(.25)
 
-                    except Exception as e:
-                        print(f"-- An error occurred --: {e}")
-                        traceback.print_exc()
-                        sequence.clear()
+#                     except Exception as e:
+#                         print(f"-- An error occurred --: {e}")
+#                         traceback.print_exc()
+#                         sequence.clear()
 
 
-        if not is_connected():
-            print("No Connectivity")
-            return False;
+#         if not is_connected():
+#             print("No Connectivity")
+#             return False;
 
-        print("Record ID Date")
-        record_id_date(sensorID, date=str(fileDate), \
-                        filename=dataFileInflux) # Name should be updated 
+#         print("Record ID Date")
+#         record_id_date(sensorID, date=str(fileDate), \
+#                         filename=dataFileInflux) # Name should be updated 
 
-        return True; 
+#         return True; 
 
-    except Exception as e:
-        # print(rowData)
-        print(point)
-        print(f"An error occurred: {e}")
-        traceback.print_exc()
+#     except Exception as e:
+#         # print(rowData)
+#         print(point)
+#         print(f"An error occurred: {e}")
+#         traceback.print_exc()
 
 # Load existing records or create a new structure
 def load_records(filename='id_date_records.yaml'):
@@ -481,46 +481,114 @@ def is_connected(hostname="www.google.com"):
         return False
 
 
+def sendCSV2Influx(csvFile,nodeID,sensorID,nodeName):
+    # Read Json should have node ID as well
+    # BME Updates should be a function
+    # IPS Updates should be a function as well
+    # Check to ignore at the beginning
+
+    
+    print()
+    print("--------------")
+    print("send CSV2 Influx")
+    print(csvFile)
+    time.sleep(1)
+    try:
+        if not is_connected():
+            print("No Connectivity")
+            return 
+        
+        sequence = []
+        tag_columns  = ["device_id", "device_name"]
+        time_column  = "dateTime"
+        lastDateTime = readJSONInfluxLatest(nodeID,sensorID)
+
+
+        with open(csvFile, "r") as f:
+            reader            = csv.DictReader((line.replace('\0','') for line in f) )
+            rowList           = list(reader)
+            for i, rowData in enumerate(rowList):
+                try:
+                    dateTimeRow = datetime.strptime(rowData['dateTime'], '%Y-%m-%d %H:%M:%S.%f')
+
+                    # print(rowData)
+                    # print(lastDateTime)
+                    # print(dateTimeRow)
+                    # print(lastDateTime<dateTimeRow)
+                    if lastDateTime<dateTimeRow:
+                        if sensorID == "BME280" or sensorID == "BME680":
+                            # print(rowData)
+                            if float(rowData["humidity"]) > 0:
+                                rowData["dewPoint"] = str(243.04 * (math.log(float(rowData["humidity"]) / 100.0) + ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))) \
+                                    / (17.625 - math.log(float(rowData["humidity"]) / 100.0) - ((17.625 * float(rowData["temperature"])) / (243.04 + float(rowData["temperature"])))))
+                            else:
+                                rowData["dewPoint"] = str(0)
+                        # print(lastDateTime)
+                        # print(dateTimeRow)
+                        # print(lastDateTime<dateTimeRow)
+                        # print("New Live data found")
+                        point = Point(sensorID)
+                        point.tag("device_id", nodeID)
+                        point.tag("device_name", nodeName)
+                        point.time(dateTimeRow, WritePrecision.NS)
+                        for header in reader.fieldnames:
+                            if header not in tag_columns and header != time_column:
+                                if sensorID == "MWBR001" and header == "rtcTime":
+                                    point.field(header, float(dateTimeRow.year))
+                                else:
+                                    point.field(header, isFloat(rowData[header]))
+                        sequence.append(point)
+
+                except Exception as e:
+                    print(f"-- An error occurred --: {e}")
+                    traceback.print_exc()
+
+                # print(len(sequence))
+                # len(sequence) > 0
+                if ((i + 1) % batchSize == 0 or i == len(rowList) - 1) and len(sequence) > 0 :
+                    try:
+                        # print(len(sequence))
+                        # len(sequence) > 0
+                        print(i+1)
+                        with InfluxDBClient(url=influxURL, token=influxToken, org=influxOrg) as client:
+                            write_api = client.write_api(write_options=SYNCHRONOUS)
+                            write_api.write(influxBucket, influxOrg, sequence)
+                        sequence.clear()
+                        time.sleep(.25)
+
+                    except Exception as e:
+                        print(f"-- An error occurred --: {e}")
+                        traceback.print_exc()
+                        sequence.clear()
+
+        if not is_connected():
+            print("No Connectivity")
+            return False;
+
+        writeJSONInfluxLatest(dateTimeRow,sensorID)
+
+        return True; 
+
+    except Exception as e:
+        print(rowData)
+        print(f"An error occurred: {e}")
+
+
+
+
+
+
+
 
 def syncData2Influx(nodeID,nodeName):
-    # Checks to do 
-    # -> Check if its getting future data 
-    # -> Check if its updated already 
-    # -> Keep a file to save the latest date updated  
-
-
-
-    today      = datetime.now().date()
-    # latestDate = takenFromAJsonFile(nodeID)
 
     csvDataFiles = glob.glob(\
                     dataFolder  + "/" +  nodeID + "/*/*/*/*"+nodeID+"*.csv")
     csvDataFiles.sort()
-    
-    # At this point this should check if the data is from today or not 
-    # If its not today you sync it and record it 
-    # If its today you record the last point - Every time the code starts 
-    # again witin a while loop you check for a new time  
 
     for csvFile in csvDataFiles:
-        print(csvFile)
         sensorID, fileDate = parse_csv_filename(csvFile)
-            
-        # If file date is the before the latest date ignore 
-        # If file date is latest date 
-            # Check the latest time updated 
-
-
-
-        # if sensorID is not None:
-        #     if fileDate != today: 
-        #         # print(fileDate)
-        #         # print("================================================")
-        #         # print("Syncing "+ csvFile)
-        #         # sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate)
-        #     else:
-        #         # sendCSV2InfluxToday(csvFile,nodeID,sensorID,nodeName,fileDate)
-
+        sendCSV2Influx(csvFile,nodeID,sensorID,nodeName,fileDate)
 
 
 def main():    
@@ -538,7 +606,7 @@ def main():
                     # print(f"Node Name: {nodeName}, Node ID (MAC): {nodeID}")
                     # if nodeName is not None:
                     # print("Node")
-                    # syncData2Influx(nodeID,nodeName)
+                    syncData2Influx(nodeID,nodeName)
                     time.sleep(1)
                     # syncTime = delayMintsV2(syncTime,loopTime)             
             else:
