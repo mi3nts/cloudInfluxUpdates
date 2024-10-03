@@ -17,8 +17,9 @@ mqttPort              =  8883  # Secure port
 
 credentials            = yaml.load(open(credentialsFile), Loader=yaml.Loader)
 
-nodeInfo               = pd.read_csv('https://raw.githubusercontent.com/mi3nts/AirQualityAnalysisWorkflows/main/influxdb/nodered-docker/id_lookup.csv')
+# nodeInfo               = pd.read_csv('https://raw.githubusercontent.com/mi3nts/AirQualityAnalysisWorkflows/main/influxdb/nodered-docker/id_lookup.csv')
 
+nodeInfo               = pd.read_csv('https://raw.githubusercontent.com/mi3nts/cloudInfluxUpdates/refs/heads/main/lists/testLookUp.csv')
 
 if __name__ == "__main__":
 
